@@ -16,7 +16,8 @@ from . import util
 from .util import sigencode_der, sigencode_strings
 from .util import sigdecode_der, sigdecode_strings
 from .curves import Curve, UnknownCurveError
-from .curves import NIST192p, NIST224p, NIST256p, NIST384p, NIST521p, SECP256k1
+from .curves import (NIST192p, NIST224p, NIST256p, NIST384p, NIST521p, SECP256k1,
+                     BRAINPOOLP256r1, BRAINPOOLP384r1, BRAINPOOLP512r1)
 from .ellipticcurve import Point
 from . import der
 from . import rfc6979
@@ -91,7 +92,8 @@ class ECDSA(unittest.TestCase):
         self.assertEqual(len(sig), default.signature_length)
         if BENCH:
             print_()
-        for curve in (NIST192p, NIST224p, NIST256p, NIST384p, NIST521p):
+        for curve in (NIST192p, NIST224p, NIST256p, NIST384p, NIST521p,
+                      BRAINPOOLP256r1, BRAINPOOLP384r1, BRAINPOOLP512r1):
             start = time.time()
             priv = SigningKey.generate(curve=curve)
             pub1 = priv.get_verifying_key()
@@ -223,6 +225,19 @@ class ECDSA(unittest.TestCase):
         priv2 = SigningKey.from_der(s1)
         self.assertTruePrivkeysEqual(priv1, priv2)
 
+        priv1 = SigningKey.generate(curve=BRAINPOOLP512r1)
+        s1 = priv1.to_pem()
+        self.assertEqual(type(s1), binary_type)
+        self.assertTrue(s1.startswith(b("-----BEGIN EC PRIVATE KEY-----")))
+        self.assertTrue(s1.strip().endswith(b("-----END EC PRIVATE KEY-----")))
+        priv2 = SigningKey.from_pem(s1)
+        self.assertTruePrivkeysEqual(priv1, priv2)
+
+        s1 = priv1.to_der()
+        self.assertEqual(type(s1), binary_type)
+        priv2 = SigningKey.from_der(s1)
+        self.assertTruePrivkeysEqual(priv1, priv2)
+
     def assertTruePubkeysEqual(self, pub1, pub2):
         self.assertEqual(pub1.pubkey.point, pub2.pubkey.point)
         self.assertEqual(pub1.pubkey.generator, pub2.pubkey.generator)
@@ -243,6 +258,14 @@ class ECDSA(unittest.TestCase):
         self.assertEqual(type(s1), binary_type)
         self.assertEqual(len(s1), NIST256p.verifying_key_length)
         pub2 = VerifyingKey.from_string(s1, curve=NIST256p)
+        self.assertTruePubkeysEqual(pub1, pub2)
+
+        priv1 = SigningKey.generate(curve=BRAINPOOLP512r1)
+        pub1 = priv1.get_verifying_key()
+        s1 = pub1.to_string()
+        self.assertEqual(type(s1), binary_type)
+        self.assertEqual(len(s1), BRAINPOOLP512r1.verifying_key_length)
+        pub2 = VerifyingKey.from_string(s1, curve=BRAINPOOLP512r1)
         self.assertTruePubkeysEqual(pub1, pub2)
 
         pub1_der = pub1.to_der()
@@ -404,6 +427,21 @@ class OpenSSL(unittest.TestCase):
     def test_from_openssl_secp256k1(self):
         return self.do_test_from_openssl(SECP256k1)
 
+    @pytest.mark.skipif("brainpoolP256r1" not in OPENSSL_SUPPORTED_CURVES,
+                        reason="system openssl does not support brainpoolP256r1")
+    def test_from_openssl_brainpoolp256r1(self):
+        return self.do_test_from_openssl(BRAINPOOLP256r1)
+
+    @pytest.mark.skipif("brainpoolP384r1" not in OPENSSL_SUPPORTED_CURVES,
+                        reason="system openssl does not support brainpoolP384r1")
+    def test_from_openssl_brainpoolp384r1(self):
+        return self.do_test_from_openssl(BRAINPOOLP384r1)
+
+    @pytest.mark.skipif("brainpoolP512r1" not in OPENSSL_SUPPORTED_CURVES,
+                        reason="system openssl does not support brainpoolP512r1")
+    def test_from_openssl_brainpoolp512r1(self):
+        return self.do_test_from_openssl(BRAINPOOLP512r1)
+
     def do_test_from_openssl(self, curve):
         curvename = curve.openssl_name
         assert curvename
@@ -463,6 +501,21 @@ class OpenSSL(unittest.TestCase):
                         reason="system openssl does not support secp256k1")
     def test_to_openssl_secp256k1(self):
         self.do_test_to_openssl(SECP256k1)
+
+    @pytest.mark.skipif("brainpoolP256r1" not in OPENSSL_SUPPORTED_CURVES,
+                        reason="system openssl does not support brainpoolP256r1")
+    def test_to_openssl_brainpoolp256r1(self):
+        self.do_test_to_openssl(BRAINPOOLP256r1)
+
+    @pytest.mark.skipif("brainpoolP384r1" not in OPENSSL_SUPPORTED_CURVES,
+                        reason="system openssl does not support brainpoolP384r1")
+    def test_to_openssl_brainpoolp384r1(self):
+        self.do_test_to_openssl(BRAINPOOLP384r1)
+
+    @pytest.mark.skipif("brainpoolP512r1" not in OPENSSL_SUPPORTED_CURVES,
+                        reason="system openssl does not support brainpoolP512r1")
+    def test_to_openssl_brainpoolp512r1(self):
+        self.do_test_to_openssl(BRAINPOOLP512r1)
 
     def do_test_to_openssl(self, curve):
         curvename = curve.openssl_name

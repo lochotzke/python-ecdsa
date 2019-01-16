@@ -43,8 +43,18 @@ NIST521p = Curve("NIST521p", ecdsa.curve_521,
 SECP256k1 = Curve("SECP256k1", ecdsa.curve_secp256k1,
                   ecdsa.generator_secp256k1,
                   (1, 3, 132, 0, 10), "secp256k1")
+BRAINPOOLP256r1 = Curve("BRAINPOOLP256r1", ecdsa.curve_brainpoolp256r1,
+                        ecdsa.generator_brainpoolp256r1,
+                        (1, 3, 36, 3, 3, 2, 8, 1, 1, 7), "brainpoolP256r1")
+BRAINPOOLP384r1 = Curve("BRAINPOOLP384r1", ecdsa.curve_brainpoolp384r1,
+                        ecdsa.generator_brainpoolp384r1,
+                        (1, 3, 36, 3, 3, 2, 8, 1, 1, 11), "brainpoolP384r1")
+BRAINPOOLP512r1 = Curve("BRAINPOOLP512r1", ecdsa.curve_brainpoolp512r1,
+                        ecdsa.generator_brainpoolp512r1,
+                        (1, 3, 36, 3, 3, 2, 8, 1, 1, 13), "brainpoolP512r1")
 
-curves = [NIST192p, NIST224p, NIST256p, NIST384p, NIST521p, SECP256k1]
+curves = [NIST192p, NIST224p, NIST256p, NIST384p, NIST521p, SECP256k1,
+          BRAINPOOLP256r1, BRAINPOOLP384r1, BRAINPOOLP512r1]
 
 
 def find_curve(oid_curve):
